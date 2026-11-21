@@ -5,11 +5,12 @@ from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import chromadb
 
-load_dotenv("/mnt/HC_Volume_106169372/rag/.env")
+BASE = Path(__file__).resolve().parent
+load_dotenv(BASE / ".env")
 
 # Paths
-PDF_PATH = "/mnt/HC_Volume_106169372/rag/documents/Introducing Mac Studio 2025 (en_GB).pdf"
-CHROMA_PATH = "/mnt/HC_Volume_106169372/rag/chromadb"
+PDF_PATH = os.getenv("PDF_PATH", str(BASE / "documents" / "Introducing Mac Studio 2025 (en_GB).pdf"))
+CHROMA_PATH = os.getenv("CHROMA_PATH", str(BASE / "chromadb"))
 
 # Models
 print("Loading embedding model...")
@@ -26,16 +27,7 @@ def extract_text(pdf_path: str) -> str:
         text += page.extract_text() + "\n"
     return text
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
-    words = text.split()
-    chunks = []
-    start = 0
-    while start < len(words):
-        end = start + chunk_size
-        chunk = " ".join(words[start:end])
-        chunks.append(chunk)
-        start += chunk_size - overlap
-    return chunks
+from chunkers import chunk_text  # noqa: E402  (pure, unit-tested)
 
 def ingest():
     print(f"Reading PDF: {PDF_PATH}")

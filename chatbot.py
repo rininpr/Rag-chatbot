@@ -12,7 +12,8 @@ from deepeval.test_case import LLMTestCase
 from deepeval.models.base_model import DeepEvalBaseLLM
 import uvicorn
 
-load_dotenv("/mnt/HC_Volume_106169372/rag/.env", override=True)
+BASE = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE, ".env"), override=True)
 
 # ── Setup ────────────────────────────────────────────────────────────
 embedder      = SentenceTransformer("all-MiniLM-L6-v2")
@@ -23,7 +24,7 @@ langfuse      = Langfuse(
     host=os.getenv("LANGFUSE_HOST")
 )
 chroma_client = chromadb.PersistentClient(
-    path="/mnt/HC_Volume_106169372/rag/chromadb"
+    path=os.getenv("CHROMA_PATH", os.path.join(BASE, "chromadb"))
 )
 collection    = chroma_client.get_or_create_collection("mac_studio")
 app           = FastAPI()

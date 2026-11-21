@@ -6,9 +6,10 @@ from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 from groq import Groq
 
-load_dotenv("/mnt/HC_Volume_106169372/rag/.env")
+BASE = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE, ".env"))
 
-PDF_PATH = "/mnt/HC_Volume_106169372/rag/documents/Introducing Mac Studio 2025 (en_GB).pdf"
+PDF_PATH = os.getenv("PDF_PATH", os.path.join(BASE, "documents", "Introducing Mac Studio 2025 (en_GB).pdf"))
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
@@ -22,23 +23,8 @@ def extract_text() -> str:
     return text.strip()
 
 # ── STRATEGY 1: FIXED SIZE ──────────────────────────────────────────
-def fixed_size_chunking(text: str, chunk_size: int = 500, overlap: int = 50) -> list:
-    words = text.split()
-    chunks = []
-    start = 0
-    index = 0
-    while start < len(words):
-        end = min(start + chunk_size, len(words))
-        chunk_text = " ".join(words[start:end])
-        chunks.append({
-            "id": f"fixed_{index}",
-            "text": chunk_text,
-            "strategy": "fixed_size",
-            "word_count": len(chunk_text.split())
-        })
-        start += chunk_size - overlap
-        index += 1
-    return chunks
+# fixed_size_chunking lives in chunkers.py (pure + unit-tested)
+from chunkers import fixed_size_chunking  # noqa: E402
 
 # ── STRATEGY 2: RECURSIVE ───────────────────────────────────────────
 def recursive_chunking(text: str, max_chunk_size: int = 500, overlap: int = 50) -> list:
